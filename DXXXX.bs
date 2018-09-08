@@ -1,0 +1,93 @@
+<pre class='metadata'>
+Title: Proposing <code>unless</code>
+Shortname: DXXXX
+Revision: 0
+Audience: EWG
+Status: D
+Group: WG21
+URL: http://wg21.link/p0418r1
+!Source: <a href="https://github.com/jfbastien/papers/blob/master/source/P0418r1.bs">github.com/jfbastien/papers/blob/master/source/P0418r1.bs</a>
+Editor: Morwenn, morwenn29@hotmail.fr
+Abstract: We propose <code>if not (condition)</code> and a few consistent modifications to solve a few issues. The goal is rather simple: having a branch not taken if the condition evaluates to <code>true</code>, so basically the opposite to <code>if</code>.
+Date: 2018-09-08
+Markup Shorthands: markdown yes, biblio yes, markup yes
+Toggle Diffs: yes
+</pre>
+
+# Revision History # {#changelog}
+
+## Revision 0 ## {#changelog-r0}
+
+    Initial release.
+
+# Motivation # {#motivation}
+
+For most purposes `if (not condition)` is enough to not take a branch when `condition` evaluates to `true`. However there are a few corner cases where it is not possible whether a workaround.
+
+## Declaring a variable with `if` ## {#declaration}
+
+When `if` is used to declare a variable, there was no easy to negate the condition before C++17:
+
+```c++
+// C++14, how do we negate this condition?
+if (auto opt = some_optional()) {
+    // Do stuff
+}
+
+// C++17, 
+if (auto opt = some_optional() ; not opt) {
+    // Do stuff
+} 
+```
+
+With the proposed extensions, the condition above could be written as follows:
+
+```c++
+if not (auto opt = some_optional()) {
+    // Do stuff
+}
+```
+
+## Contextual conversions to `bool` ## {#contextual-conversion}
+
+If `operator!` is overloaded, `if (not condition)` is not even guaranteed to have a result contextually convertible to `bool`, which might result in tricky corner cases when writing generic algorithms. Consider the following naive implementation of `std::find_if_not`:
+
+```c++
+template<typename InputIterator, typename Predicate>
+InputIterator find_if_not(InputIterator first, InputIterator last, Predicate pred)
+{
+    for (; first != last; ++first) {
+        if (!pred(*first)) {
+            break;
+        }
+    }
+    return first;
+}
+```
+
+If a tricky overload of `operator!` exists, the algorithm above might not give the expected result without even violating the definition of `Predicate` (the issue came up while reviewing the inclusion of the Ranges TS in C++20). The proposed `if not` however negates the condition *after* the contextual conversion to `bool`, avoiding this subtle class of problems:
+
+```c++
+template<typename InputIterator, typename Predicate>
+InputIterator find_if_not(InputIterator first, InputIterator last, Predicate pred)
+{
+    for (; first != last; ++first) {
+        if not (pred(*first)) { // Safe even when operator! is overloaded
+            break;
+        }
+    }
+    return first;
+}
+```
+
+The current workaround is to use `static_cast` before `!` which, as far as I know, no standard algorithms does. Using `if not` would be an idiomatic solution to avoid this kind of problem and have correct generic code without extra effort.
+
+# Extensions # {#extensions}
+
+## <code>while not</code> ## {#while-not}
+
+## <code>if constexpr</code> # {#if-constexpr}
+
+# Acknowledgement # {#ack}
+
+Who should I acknowledge?
