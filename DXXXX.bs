@@ -8,7 +8,7 @@ Group: WG21
 URL: http://wg21.link/p0418r1
 !Source: <a href="https://github.com/jfbastien/papers/blob/master/source/P0418r1.bs">github.com/jfbastien/papers/blob/master/source/P0418r1.bs</a>
 Editor: Morwenn, morwenn29@hotmail.fr
-Abstract: We propose <code>if not (condition)</code> and a few consistent modifications to solve a few issues. The goal is rather simple: having a branch not taken if the condition evaluates to <code>true</code>, so basically the opposite to <code>if</code>.
+Abstract: We propose <code>if not (condition)</code> and a few consistent additions to the C++ language, mostly as a convenience feature, but also because it might help to avoid some subtle classes of problems. The goal is rather simple: applying a negation to the condition passed to an <code>if</code> statement after having applied the contextual conversion to <code>bool</code>.
 Date: 2018-09-08
 Markup Shorthands: markdown yes, biblio yes, markup yes
 Toggle Diffs: yes
@@ -48,15 +48,19 @@ if not (auto opt = some_optional()) {
 }
 ```
 
-## Contextual conversions to `bool` ## {#contextual-conversion}
+We believe that the notation itself is clear enough and should be rather obvious to everyone reading the condition.
 
-If `operator!` is overloaded, `if (not condition)` is not even guaranteed to have a result contextually convertible to `bool`, which might result in tricky corner cases when writing generic algorithms. Consider the following naive implementation of `std::find_if_not`:
+## Avoid tricky overloads of `operator!` ## {#operator-not}
+
+If `operator!` is overloaded, `if (not condition)` is not guaranteed to have a result contextually convertible to `bool`, which might result in tricky corner cases when writing generic algorithms. Consider the following naive implementation of `std::find_if_not`:
 
 ```c++
 template<typename InputIterator, typename Predicate>
 InputIterator find_if_not(InputIterator first, InputIterator last, Predicate pred)
 {
     for (; first != last; ++first) {
+        // Fails to compile if operator! doesn't return a result
+        // contextually convertible to bool
         if (!pred(*first)) {
             break;
         }
@@ -65,14 +69,16 @@ InputIterator find_if_not(InputIterator first, InputIterator last, Predicate pre
 }
 ```
 
-If a tricky overload of `operator!` exists, the algorithm above might not give the expected result without even violating the definition of `Predicate` (the issue came up while reviewing the inclusion of the Ranges TS in C++20). The proposed `if not` however negates the condition *after* the contextual conversion to `bool`, avoiding this subtle class of problems:
+If `operator!` is overloaded in such a way that it doesn't return a value contextually convertibe to `bool`, the algorithm above will fail to compile, despite `pred` not violating the `Predicate` concept (the issue came up while reviewing the inclusion of the Ranges TS in C++20). We propose that `if not` applies the negation *after* the contextual conversion to `bool`, avoiding this subtle class of problems altogether:
 
 ```c++
 template<typename InputIterator, typename Predicate>
 InputIterator find_if_not(InputIterator first, InputIterator last, Predicate pred)
 {
     for (; first != last; ++first) {
-        if not (pred(*first)) { // Safe even when operator! is overloaded
+        // Safe even when operator! is overloaded: the contextual
+        // conversion to bool is applied before the negation
+        if not (pred(*first)) {
             break;
         }
     }
@@ -80,14 +86,16 @@ InputIterator find_if_not(InputIterator first, InputIterator last, Predicate pre
 }
 ```
 
-The current workaround is to use `static_cast` before `!` which, as far as I know, no standard algorithms does. Using `if not` would be an idiomatic solution to avoid this kind of problem and have correct generic code without extra effort.
+The current workaround is to use `static_cast<bool>(pred(*first))` before `!` is called which, as far as I know, is not what standard library implementations of algorithms do. Using `if not` would be an idiomatic solution to avoid this kind of problem and produce more correct generic code without extra effort. It would ensure that the negation always happens in the boolean domain.
 
-# Extensions # {#extensions}
+# Clarifications & Extensions # {#extensions}
+
+First of all, while I use `not` through the proposal because of personal preference, it is intended that `if !(condition)` works too. Second, `if not` should also negate the condition even in the presence of an *init-statement* as introduced in C++17.
 
 ## <code>while not</code> ## {#while-not}
 
-## <code>if constexpr</code> # {#if-constexpr}
+The control flow statements `if` and `while` tend to evolve in a somewhat symmetrical manner, we propose to allow `while` and `do while` to benefit from the same augmentation in a similar manner.
 
-# Acknowledgement # {#ack}
+## <code>if constexpr</code> ## {#if-constexpr}
 
-Who should I acknowledge?
+It would be logical to allow the same extension `if constexpr` to benefit from the same extension. The form `if constexpr not` would be preferred to `if not constexpr` because it subjectively reads better when spelled with an exclamation mark. On the other hand it might also be confused with the `constexpr!` proposed by P1073.

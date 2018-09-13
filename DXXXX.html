@@ -1230,6 +1230,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version db3f42f38318d417fb038711a846849b7a68ff34" name="generator">
   <link href="http://wg21.link/p0418r1" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
+  <meta content="da5cce6350610ed8f9fc8c1fe3136d96687f1468" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1470,7 +1471,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   </div>
   <div class="p-summary" data-fill-with="abstract">
    <h2 class="no-num no-toc no-ref heading settled" id="abstract"><span class="content">Abstract</span></h2>
-   <p>We propose <code class="highlight"><c- k>if</c-> <c- n>not</c-> <c- p>(</c-><c- n>condition</c-><c- p>)</c-></code> and a few consistent modifications to solve a few issues. The goal is rather simple: having a branch not taken if the condition evaluates to <code class="highlight">true</code>, so basically the opposite to <code class="highlight"><c- k>if</c-></code>.</p>
+   <p>We propose <code class="highlight"><c- k>if</c-> <c- n>not</c-> <c- p>(</c-><c- n>condition</c-><c- p>)</c-></code> and a few consistent additions to the C++ language, mostly as a convenience feature, but also because it might help to avoid some subtle classes of problems. The goal is rather simple: applying a negation to the condition passed to an <code class="highlight"><c- k>if</c-></code> statement after having applied the contextual conversion to <code class="highlight"><c- b>bool</c-></code>.</p>
   </div>
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
@@ -1484,15 +1485,14 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <a href="#motivation"><span class="secno">2</span> <span class="content">Motivation</span></a>
      <ol class="toc">
       <li><a href="#declaration"><span class="secno">2.1</span> <span class="content">Declaring a variable with <code class="highlight"><c- k>if</c-></code></span></a>
-      <li><a href="#contextual-conversion"><span class="secno">2.2</span> <span class="content">Contextual conversions to <code class="highlight"><c- b>bool</c-></code></span></a>
+      <li><a href="#operator-not"><span class="secno">2.2</span> <span class="content">Avoid tricky overloads of <code class="highlight"><c- k>operator</c-><c- o>!</c-></code></span></a>
      </ol>
     <li>
-     <a href="#extensions"><span class="secno">3</span> <span class="content">Extensions</span></a>
+     <a href="#extensions"><span class="secno">3</span> <span class="content">Clarifications &amp; Extensions</span></a>
      <ol class="toc">
       <li><a href="#while-not"><span class="secno">3.1</span> <span class="content"><code class="highlight"><c- k>while</c-> <c- n>not</c-></code></span></a>
-      <li><a href="#if-constexpr"><span class="secno">3.2</span> <span class="content"><code class="highlight"><c- k>if</c-> <c- k>constexpr</c-></code> # {#if-constexpr}</span></a>
+      <li><a href="#if-constexpr"><span class="secno">3.2</span> <span class="content"><code class="highlight"><c- k>if</c-> <c- k>constexpr</c-></code></span></a>
      </ol>
-    <li><a href="#ack"><span class="secno">4</span> <span class="content">Acknowledgement</span></a>
    </ol>
   </nav>
   <main>
@@ -1518,12 +1518,15 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <c- c1>// Do stuff</c->
 <c- p>}</c->
 </pre>
-   <h3 class="heading settled" data-level="2.2" id="contextual-conversion"><span class="secno">2.2. </span><span class="content">Contextual conversions to <code class="highlight"><c- b>bool</c-></code></span><a class="self-link" href="#contextual-conversion"></a></h3>
-   <p>If <code class="highlight"><c- k>operator</c-><c- o>!</c-></code> is overloaded, <code class="highlight"><c- k>if</c-> <c- p>(</c-><c- n>not</c-> <c- n>condition</c-><c- p>)</c-></code> is not even guaranteed to have a result contextually convertible to <code class="highlight"><c- b>bool</c-></code>, which might result in tricky corner cases when writing generic algorithms. Consider the following naive implementation of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>find_if_not</c-></code>:</p>
+   <p>We believe that the notation itself is clear enough and should be rather obvious to everyone reading the condition.</p>
+   <h3 class="heading settled" data-level="2.2" id="operator-not"><span class="secno">2.2. </span><span class="content">Avoid tricky overloads of <code class="highlight"><c- k>operator</c-><c- o>!</c-></code></span><a class="self-link" href="#operator-not"></a></h3>
+   <p>If <code class="highlight"><c- k>operator</c-><c- o>!</c-></code> is overloaded, <code class="highlight"><c- k>if</c-> <c- p>(</c-><c- n>not</c-> <c- n>condition</c-><c- p>)</c-></code> is not guaranteed to have a result contextually convertible to <code class="highlight"><c- b>bool</c-></code>, which might result in tricky corner cases when writing generic algorithms. Consider the following naive implementation of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>find_if_not</c-></code>:</p>
 <pre class="language-c++ highlight"><c- n>template</c-><c- o>&lt;</c-><c- kr>typename</c-> <c- n>InputIterator</c-><c- p>,</c-> <c- kr>typename</c-> <c- n>Predicate</c-><c- o>></c->
 <c- n>InputIterator</c-> <c- n>find_if_not</c-><c- p>(</c-><c- n>InputIterator</c-> <c- n>first</c-><c- p>,</c-> <c- n>InputIterator</c-> <c- n>last</c-><c- p>,</c-> <c- n>Predicate</c-> <c- n>pred</c-><c- p>)</c->
 <c- p>{</c->
     <c- k>for</c-> <c- p>(;</c-> <c- n>first</c-> <c- o>!=</c-> <c- n>last</c-><c- p>;</c-> <c- o>++</c-><c- n>first</c-><c- p>)</c-> <c- p>{</c->
+        <c- c1>// Fails to compile if operator! doesn’t return a result</c->
+        <c- c1>// contextually convertible to bool</c->
         <c- k>if</c-> <c- p>(</c-><c- o>!</c-><c- n>pred</c-><c- p>(</c-><c- o>*</c-><c- n>first</c-><c- p>))</c-> <c- p>{</c->
             <c- k>break</c-><c- p>;</c->
         <c- p>}</c->
@@ -1531,23 +1534,27 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <c- k>return</c-> <c- n>first</c-><c- p>;</c->
 <c- p>}</c->
 </pre>
-   <p>If a tricky overload of <code class="highlight"><c- k>operator</c-><c- o>!</c-></code> exists, the algorithm above might not give the expected result without even violating the definition of <code class="highlight"><c- n>Predicate</c-></code>. The proposed <code class="highlight"><c- k>if</c-> <c- n>not</c-></code> however negates the condition <em>after</em> the contextual conversion to <code class="highlight"><c- b>bool</c-></code>, avoiding this subtle class of problems:</p>
+   <p>If <code class="highlight"><c- k>operator</c-><c- o>!</c-></code> is overloaded in such a way that it doesn’t return a value contextually convertibe to <code class="highlight"><c- b>bool</c-></code>, the algorithm above will fail to compile, despite <code class="highlight"><c- n>pred</c-></code> not violating the <code class="highlight"><c- n>Predicate</c-></code> concept (the issue came up while reviewing the inclusion of the Ranges TS in C++20). We propose that <code class="highlight"><c- k>if</c-> <c- n>not</c-></code> applies the negation <em>after</em> the contextual conversion to <code class="highlight"><c- b>bool</c-></code>, avoiding this subtle class of problems altogether:</p>
 <pre class="language-c++ highlight"><c- n>template</c-><c- o>&lt;</c-><c- kr>typename</c-> <c- n>InputIterator</c-><c- p>,</c-> <c- kr>typename</c-> <c- n>Predicate</c-><c- o>></c->
 <c- n>InputIterator</c-> <c- n>find_if_not</c-><c- p>(</c-><c- n>InputIterator</c-> <c- n>first</c-><c- p>,</c-> <c- n>InputIterator</c-> <c- n>last</c-><c- p>,</c-> <c- n>Predicate</c-> <c- n>pred</c-><c- p>)</c->
 <c- p>{</c->
     <c- k>for</c-> <c- p>(;</c-> <c- n>first</c-> <c- o>!=</c-> <c- n>last</c-><c- p>;</c-> <c- o>++</c-><c- n>first</c-><c- p>)</c-> <c- p>{</c->
-        <c- k>if</c-> <c- n>not</c-> <c- p>(</c-><c- n>pred</c-><c- p>(</c-><c- o>*</c-><c- n>first</c-><c- p>))</c-> <c- p>{</c-> <c- c1>// Safe even when operator! is overloaded</c->
+        <c- c1>// Safe even when operator! is overloaded: the contextual</c->
+        <c- c1>// conversion to bool is applied before the negation</c->
+        <c- k>if</c-> <c- n>not</c-> <c- p>(</c-><c- n>pred</c-><c- p>(</c-><c- o>*</c-><c- n>first</c-><c- p>))</c-> <c- p>{</c->
             <c- k>break</c-><c- p>;</c->
         <c- p>}</c->
     <c- p>}</c->
     <c- k>return</c-> <c- n>first</c-><c- p>;</c->
 <c- p>}</c->
 </pre>
-   <h2 class="heading settled" data-level="3" id="extensions"><span class="secno">3. </span><span class="content">Extensions</span><a class="self-link" href="#extensions"></a></h2>
+   <p>The current workaround is to use <code class="highlight"><c- k>static_cast</c-><c- o>&lt;</c-><c- b>bool</c-><c- o>></c-><c- p>(</c-><c- n>pred</c-><c- p>(</c-><c- o>*</c-><c- n>first</c-><c- p>))</c-></code> before <code class="highlight"><c- o>!</c-></code> is called which, as far as I know, is not what standard library implementations of algorithms do. Using <code class="highlight"><c- k>if</c-> <c- n>not</c-></code> would be an idiomatic solution to avoid this kind of problem and produce more correct generic code without extra effort. It would ensure that the negation always happens in the boolean domain.</p>
+   <h2 class="heading settled" data-level="3" id="extensions"><span class="secno">3. </span><span class="content">Clarifications &amp; Extensions</span><a class="self-link" href="#extensions"></a></h2>
+   <p>First of all, while I use <code class="highlight"><c- n>not</c-></code> through the proposal because of personal preference, it is intended that <code class="highlight"><c- k>if</c-> <c- o>!</c-><c- p>(</c-><c- n>condition</c-><c- p>)</c-></code> works too. Second, <code class="highlight"><c- k>if</c-> <c- n>not</c-></code> should also negate the condition even in the presence of an <em>init-statement</em> as introduced in C++17.</p>
    <h3 class="heading settled" data-level="3.1" id="while-not"><span class="secno">3.1. </span><span class="content"><code class="highlight"><c- k>while</c-> <c- n>not</c-></code></span><a class="self-link" href="#while-not"></a></h3>
-   <h3 class="heading settled" data-level="3.2" id="if-constexpr"><span class="secno">3.2. </span><span class="content"><code class="highlight"><c- k>if</c-> <c- k>constexpr</c-></code> # {#if-constexpr}</span><a class="self-link" href="#if-constexpr"></a></h3>
-   <h2 class="heading settled" data-level="4" id="ack"><span class="secno">4. </span><span class="content">Acknowledgement</span><a class="self-link" href="#ack"></a></h2>
-   <p>Who should I acknowledge?</p>
+   <p>The control flow statements <code class="highlight"><c- k>if</c-></code> and <code class="highlight"><c- k>while</c-></code> tend to evolve in a somewhat symmetrical manner, we propose to allow <code class="highlight"><c- k>while</c-></code> and <code class="highlight"><c- k>do</c-> <c- k>while</c-></code> to benefit from the same augmentation in a similar manner.</p>
+   <h3 class="heading settled" data-level="3.2" id="if-constexpr"><span class="secno">3.2. </span><span class="content"><code class="highlight"><c- k>if</c-> <c- k>constexpr</c-></code></span><a class="self-link" href="#if-constexpr"></a></h3>
+   <p>It would be logical to allow the same extension <code class="highlight"><c- k>if</c-> <c- k>constexpr</c-></code> to benefit from the same extension. The form <code class="highlight"><c- k>if</c-> <c- k>constexpr</c-> <c- n>not</c-></code> would be preferred to <code class="highlight"><c- k>if</c-> <c- n>not</c-> <c- k>constexpr</c-></code> because it subjectively reads better when spelled with an exclamation mark. On the other hand it might also be confused with the <code class="highlight"><c- k>constexpr</c-><c- o>!</c-></code> proposed by P1073.</p>
   </main>
 <script>
 (function() {
