@@ -50,7 +50,7 @@ if not (auto opt = some_optional()) {
 
 We believe that the notation itself is clear enough and should be rather obvious to everyone reading the condition.
 
-## Avoid tricky overloads of `operator!` ## {#operator-not}
+## Avoiding tricky overloads of `operator!` ## {#operator-not}
 
 If `operator!` is overloaded, `if (not condition)` is not guaranteed to have a result contextually convertible to `bool`, which might result in tricky corner cases when writing generic algorithms. Consider the following naive implementation of `std::find_if_not`:
 
@@ -98,4 +98,4 @@ The control flow statements `if` and `while` tend to evolve in a somewhat symmet
 
 ## <code>if constexpr</code> ## {#if-constexpr}
 
-It would be logical to allow the same extension `if constexpr` to benefit from the same extension. The form `if constexpr not` would be preferred to `if not constexpr` because it subjectively reads better when spelled with an exclamation mark. On the other hand it might also be confused with the `constexpr!` proposed by P1073.
+It would be logical to allow the same extension `if constexpr` to benefit from the same extension. The form `if constexpr not` would be preferred to `if not constexpr` because it subjectively reads better when spelled with an exclamation mark. On the other hand it might also be confused with the `constexpr!` proposed by P1073. This will probably need some bikeshed.
