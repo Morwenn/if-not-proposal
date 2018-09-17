@@ -5,8 +5,8 @@ Revision: 0
 Audience: EWG
 Status: D
 Group: WG21
-URL: http://wg21.link/p0418r1
-!Source: <a href="https://github.com/jfbastien/papers/blob/master/source/P0418r1.bs">github.com/jfbastien/papers/blob/master/source/P0418r1.bs</a>
+URL: https://github.com/Morwenn/if-not-proposal
+!Source: <a href="https://github.com/Morwenn/if-not-proposal/blob/master/DXXXX.bs">github.com/Morwenn/if-not-proposal/blob/master/DXXXX.bs</a>
 Editor: Morwenn, morwenn29@hotmail.fr
 Abstract: We propose <code>if not (condition)</code> and a few consistent additions to the C++ language, mostly as a convenience feature, but also because it might help to avoid some subtle classes of problems. The goal is rather simple: applying a negation to the condition passed to an <code>if</code> statement after having applied the contextual conversion to <code>bool</code>.
 Date: 2018-09-08
@@ -22,11 +22,13 @@ Toggle Diffs: yes
 
 # Motivation # {#motivation}
 
-For most purposes `if (not condition)` is enough to not take a branch when `condition` evaluates to `true`. However there are a few corner cases where it is not possible whether a workaround.
+Introducing `if not` is mainly a matter of convenience: for most purposes `if (not condition)` is enough to not take a branch when `condition` evaluates to `true`. The main idea is to lift the negation into the boolean domain since that is the domain conditional statements typically deal with.
+
+Moreover there are a few corner cases where it is not possible to negate the `if` condition naively without a workaround, which this proposal intends to make easier to deal with. Consider the examples in the following subsections.
 
 ## Declaring a variable with `if` ## {#declaration}
 
-When `if` is used to declare a variable, there was no easy and clean to negate the condition before C++17:
+When `if` is used to declare a variable, there was no easy and clean way to negate the condition before C++17:
 
 ```c++
 // C++14, best effort, might be confusing
@@ -48,7 +50,7 @@ if not (auto opt = some_optional()) {
 }
 ```
 
-We believe that the notation itself is clear enough and should be rather obvious to everyone reading the statement.
+We believe that the notation itself is clear enough and should be rather obvious to everyone reading the conditional statement.
 
 ## Avoiding tricky overloads of `operator!` ## {#operator-not}
 

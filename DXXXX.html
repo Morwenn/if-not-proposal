@@ -1228,9 +1228,9 @@ Possible extra rowspan handling
     }
   </style>
   <meta content="Bikeshed version db3f42f38318d417fb038711a846849b7a68ff34" name="generator">
-  <link href="http://wg21.link/p0418r1" rel="canonical">
+  <link href="https://github.com/Morwenn/if-not-proposal" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="c714a8a0541125fec25c5c800023e0d91c481ea2" name="document-revision">
+  <meta content="8f489a412e6716bbd6509d6c03e0c8f510675468" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1451,7 +1451,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
-     <dd><a class="u-url" href="http://wg21.link/p0418r1">http://wg21.link/p0418r1</a>
+     <dd><a class="u-url" href="https://github.com/Morwenn/if-not-proposal">https://github.com/Morwenn/if-not-proposal</a>
      <dt>Author:
      <dd>
       <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:morwenn29@hotmail.fr">Morwenn</a>
@@ -1463,7 +1463,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <dt>Project:
      <dd>ISO/IEC JTC1/SC22/WG21 14882: Programming Language — C++
      <dt>Source:
-     <dd><a href="https://github.com/jfbastien/papers/blob/master/source/P0418r1.bs">github.com/jfbastien/papers/blob/master/source/P0418r1.bs</a>
+     <dd><a href="https://github.com/Morwenn/if-not-proposal/blob/master/DXXXX.bs">github.com/Morwenn/if-not-proposal/blob/master/DXXXX.bs</a>
     </dl>
    </div>
    <div data-fill-with="warning"></div>
@@ -1505,9 +1505,10 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h3 class="heading settled" data-level="1.1" id="changelog-r0"><span class="secno">1.1. </span><span class="content">Revision 0</span><a class="self-link" href="#changelog-r0"></a></h3>
    <p>Initial release.</p>
    <h2 class="heading settled" data-level="2" id="motivation"><span class="secno">2. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h2>
-   <p>For most purposes <code class="highlight"><c- k>if</c-> <c- p>(</c-><c- n>not</c-> <c- n>condition</c-><c- p>)</c-></code> is enough to not take a branch when <code class="highlight"><c- n>condition</c-></code> evaluates to <code class="highlight">true</code>. However there are a few corner cases where it is not possible whether a workaround.</p>
+   <p>Introducing <code class="highlight"><c- k>if</c-> <c- n>not</c-></code> is mainly a matter of convenience: for most purposes <code class="highlight"><c- k>if</c-> <c- p>(</c-><c- n>not</c-> <c- n>condition</c-><c- p>)</c-></code> is enough to not take a branch when <code class="highlight"><c- n>condition</c-></code> evaluates to <code class="highlight">true</code>. The main idea is to lift the negation into the boolean domain since that is the domain conditional statements typically deal with.</p>
+   <p>Moreover there are a few corner cases where it is not possible to negate the <code class="highlight"><c- k>if</c-></code> condition naively without a workaround, which this proposal intends to make easier to deal with. Consider the examples in the following subsections.</p>
    <h3 class="heading settled" data-level="2.1" id="declaration"><span class="secno">2.1. </span><span class="content">Declaring a variable with <code class="highlight"><c- k>if</c-></code></span><a class="self-link" href="#declaration"></a></h3>
-   <p>When <code class="highlight"><c- k>if</c-></code> is used to declare a variable, there was no easy and clean to negate the condition before C++17:</p>
+   <p>When <code class="highlight"><c- k>if</c-></code> is used to declare a variable, there was no easy and clean way to negate the condition before C++17:</p>
 <pre class="language-c++ highlight"><c- c1>// C++14, best effort, might be confusing</c->
 <c- k>if</c-> <c- p>(</c-><c- k>auto</c-> <c- n>opt</c-> <c- o>=</c-> <c- n>some_optional</c-><c- p>());</c-> <c- k>else</c-> <c- p>{</c->
     <c- c1>// Do stuff</c->
@@ -1523,7 +1524,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <c- c1>// Do stuff</c->
 <c- p>}</c->
 </pre>
-   <p>We believe that the notation itself is clear enough and should be rather obvious to everyone reading the statement.</p>
+   <p>We believe that the notation itself is clear enough and should be rather obvious to everyone reading the conditional statement.</p>
    <h3 class="heading settled" data-level="2.2" id="operator-not"><span class="secno">2.2. </span><span class="content">Avoiding tricky overloads of <code class="highlight"><c- k>operator</c-><c- o>!</c-></code></span><a class="self-link" href="#operator-not"></a></h3>
    <p>If <code class="highlight"><c- k>operator</c-><c- o>!</c-></code> is overloaded, <code class="highlight"><c- k>if</c-> <c- p>(</c-><c- n>not</c-> <c- n>condition</c-><c- p>)</c-></code> is not guaranteed to have a result contextually convertible to <code class="highlight"><c- b>bool</c-></code>, which might result in tricky corner cases when writing generic algorithms. Consider the following naive implementation of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>find_if_not</c-></code>:</p>
 <pre class="language-c++ highlight"><c- n>template</c-><c- o>&lt;</c-><c- kr>typename</c-> <c- n>InputIterator</c-><c- p>,</c-> <c- kr>typename</c-> <c- n>Predicate</c-><c- o>></c->
