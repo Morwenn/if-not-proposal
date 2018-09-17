@@ -26,15 +26,15 @@ For most purposes `if (not condition)` is enough to not take a branch when `cond
 
 ## Declaring a variable with `if` ## {#declaration}
 
-When `if` is used to declare a variable, there was no easy to negate the condition before C++17:
+When `if` is used to declare a variable, there was no easy and clean to negate the condition before C++17:
 
 ```c++
-// C++14, how do we negate this condition?
-if (auto opt = some_optional()) {
+// C++14, best effort, might be confusing
+if (auto opt = some_optional()); else {
     // Do stuff
 }
 
-// C++17, 
+// C++17, separate declaration and condition
 if (auto opt = some_optional() ; not opt) {
     // Do stuff
 } 
@@ -48,7 +48,7 @@ if not (auto opt = some_optional()) {
 }
 ```
 
-We believe that the notation itself is clear enough and should be rather obvious to everyone reading the condition.
+We believe that the notation itself is clear enough and should be rather obvious to everyone reading the statement.
 
 ## Avoiding tricky overloads of `operator!` ## {#operator-not}
 
@@ -98,4 +98,19 @@ The control flow statements `if` and `while` tend to evolve in a somewhat symmet
 
 ## <code>if constexpr</code> ## {#if-constexpr}
 
-It would be logical to allow the same extension `if constexpr` to benefit from the same extension. The form `if constexpr not` would be preferred to `if not constexpr` because it subjectively reads better when spelled with an exclamation mark. On the other hand it might also be confused with the `constexpr!` proposed by P1073. This will probably need some bikeshed.
+It would be logical to allow the same extension `if constexpr` to benefit from the same extension. The form `if constexpr not` would be preferred to `if not constexpr` because it subjectively reads better when spelled with an exclamation mark. On the other hand [[P1073]] introduces a `constexpr!` token which would probably be preferred by max munch rule unless special cased if one tried to write `if constexpr!(condition)`, which might be seen as a drawback. This will probably need some bikeshed.
+
+<pre class=biblio>
+{
+    "P1073": {
+        "href": "https://wg21.link/P1073R1",
+        "title": "constexpr! functions",
+        "authors": [
+            "Richard Smith",
+            "Andrew Sutton",
+            "Daveed Vandevoorde"
+        ],
+        "date": "22 June 2018"
+    }
+}
+</pre>

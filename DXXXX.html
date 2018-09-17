@@ -1230,7 +1230,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version db3f42f38318d417fb038711a846849b7a68ff34" name="generator">
   <link href="http://wg21.link/p0418r1" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="d810c10c73962805260ecc27fd629ca534f3bbc7" name="document-revision">
+  <meta content="c714a8a0541125fec25c5c800023e0d91c481ea2" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1493,6 +1493,11 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
       <li><a href="#while-not"><span class="secno">3.1</span> <span class="content"><code class="highlight"><c- k>while</c-> <c- n>not</c-></code></span></a>
       <li><a href="#if-constexpr"><span class="secno">3.2</span> <span class="content"><code class="highlight"><c- k>if</c-> <c- k>constexpr</c-></code></span></a>
      </ol>
+    <li>
+     <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
+     <ol class="toc">
+      <li><a href="#informative"><span class="secno"></span> <span class="content">Informative References</span></a>
+     </ol>
    </ol>
   </nav>
   <main>
@@ -1502,13 +1507,13 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="heading settled" data-level="2" id="motivation"><span class="secno">2. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h2>
    <p>For most purposes <code class="highlight"><c- k>if</c-> <c- p>(</c-><c- n>not</c-> <c- n>condition</c-><c- p>)</c-></code> is enough to not take a branch when <code class="highlight"><c- n>condition</c-></code> evaluates to <code class="highlight">true</code>. However there are a few corner cases where it is not possible whether a workaround.</p>
    <h3 class="heading settled" data-level="2.1" id="declaration"><span class="secno">2.1. </span><span class="content">Declaring a variable with <code class="highlight"><c- k>if</c-></code></span><a class="self-link" href="#declaration"></a></h3>
-   <p>When <code class="highlight"><c- k>if</c-></code> is used to declare a variable, there was no easy to negate the condition before C++17:</p>
-<pre class="language-c++ highlight"><c- c1>// C++14, how do we negate this condition?</c->
-<c- k>if</c-> <c- p>(</c-><c- k>auto</c-> <c- n>opt</c-> <c- o>=</c-> <c- n>some_optional</c-><c- p>())</c-> <c- p>{</c->
+   <p>When <code class="highlight"><c- k>if</c-></code> is used to declare a variable, there was no easy and clean to negate the condition before C++17:</p>
+<pre class="language-c++ highlight"><c- c1>// C++14, best effort, might be confusing</c->
+<c- k>if</c-> <c- p>(</c-><c- k>auto</c-> <c- n>opt</c-> <c- o>=</c-> <c- n>some_optional</c-><c- p>());</c-> <c- k>else</c-> <c- p>{</c->
     <c- c1>// Do stuff</c->
 <c- p>}</c->
 
-<c- c1>// C++17, </c->
+<c- c1>// C++17, separate declaration and condition</c->
 <c- k>if</c-> <c- p>(</c-><c- k>auto</c-> <c- n>opt</c-> <c- o>=</c-> <c- n>some_optional</c-><c- p>()</c-> <c- p>;</c-> <c- n>not</c-> <c- n>opt</c-><c- p>)</c-> <c- p>{</c->
     <c- c1>// Do stuff</c->
 <c- p>}</c-> 
@@ -1518,7 +1523,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <c- c1>// Do stuff</c->
 <c- p>}</c->
 </pre>
-   <p>We believe that the notation itself is clear enough and should be rather obvious to everyone reading the condition.</p>
+   <p>We believe that the notation itself is clear enough and should be rather obvious to everyone reading the statement.</p>
    <h3 class="heading settled" data-level="2.2" id="operator-not"><span class="secno">2.2. </span><span class="content">Avoiding tricky overloads of <code class="highlight"><c- k>operator</c-><c- o>!</c-></code></span><a class="self-link" href="#operator-not"></a></h3>
    <p>If <code class="highlight"><c- k>operator</c-><c- o>!</c-></code> is overloaded, <code class="highlight"><c- k>if</c-> <c- p>(</c-><c- n>not</c-> <c- n>condition</c-><c- p>)</c-></code> is not guaranteed to have a result contextually convertible to <code class="highlight"><c- b>bool</c-></code>, which might result in tricky corner cases when writing generic algorithms. Consider the following naive implementation of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>find_if_not</c-></code>:</p>
 <pre class="language-c++ highlight"><c- n>template</c-><c- o>&lt;</c-><c- kr>typename</c-> <c- n>InputIterator</c-><c- p>,</c-> <c- kr>typename</c-> <c- n>Predicate</c-><c- o>></c->
@@ -1554,7 +1559,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h3 class="heading settled" data-level="3.1" id="while-not"><span class="secno">3.1. </span><span class="content"><code class="highlight"><c- k>while</c-> <c- n>not</c-></code></span><a class="self-link" href="#while-not"></a></h3>
    <p>The control flow statements <code class="highlight"><c- k>if</c-></code> and <code class="highlight"><c- k>while</c-></code> tend to evolve in a somewhat symmetrical manner, we propose to allow <code class="highlight"><c- k>while</c-></code> and <code class="highlight"><c- k>do</c-> <c- k>while</c-></code> to benefit from the same augmentation in a similar manner.</p>
    <h3 class="heading settled" data-level="3.2" id="if-constexpr"><span class="secno">3.2. </span><span class="content"><code class="highlight"><c- k>if</c-> <c- k>constexpr</c-></code></span><a class="self-link" href="#if-constexpr"></a></h3>
-   <p>It would be logical to allow the same extension <code class="highlight"><c- k>if</c-> <c- k>constexpr</c-></code> to benefit from the same extension. The form <code class="highlight"><c- k>if</c-> <c- k>constexpr</c-> <c- n>not</c-></code> would be preferred to <code class="highlight"><c- k>if</c-> <c- n>not</c-> <c- k>constexpr</c-></code> because it subjectively reads better when spelled with an exclamation mark. On the other hand it might also be confused with the <code class="highlight"><c- k>constexpr</c-><c- o>!</c-></code> proposed by P1073. This will probably need some bikeshed.</p>
+   <p>It would be logical to allow the same extension <code class="highlight"><c- k>if</c-> <c- k>constexpr</c-></code> to benefit from the same extension. The form <code class="highlight"><c- k>if</c-> <c- k>constexpr</c-> <c- n>not</c-></code> would be preferred to <code class="highlight"><c- k>if</c-> <c- n>not</c-> <c- k>constexpr</c-></code> because it subjectively reads better when spelled with an exclamation mark. On the other hand <a data-link-type="biblio" href="#biblio-p1073">[P1073]</a> introduces a <code class="highlight"><c- k>constexpr</c-><c- o>!</c-></code> token which would probably be preferred by max munch rule unless special cased if one tried to write <code class="highlight"><c- k>if</c-> <c- k>constexpr</c-><c- o>!</c-><c- p>(</c-><c- n>condition</c-><c- p>)</c-></code>, which might be seen as a drawback. This will probably need some bikeshed.</p>
   </main>
 <script>
 (function() {
@@ -1685,3 +1690,9 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
 
 })();
 </script>
+  <h2 class="no-num no-ref heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
+  <h3 class="no-num no-ref heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
+  <dl>
+   <dt id="biblio-p1073">[P1073]
+   <dd>Richard Smith; Andrew Sutton; Daveed Vandevoorde. <a href="https://wg21.link/P1073R1">constexpr! functions</a>. 22 June 2018. URL: <a href="https://wg21.link/P1073R1">https://wg21.link/P1073R1</a>
+  </dl>
